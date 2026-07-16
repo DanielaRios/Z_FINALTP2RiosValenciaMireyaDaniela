@@ -1,0 +1,147 @@
+@host = http://127.0.0.1:3001
+@contentType = application/json
+
+# Reemplazar por el _id de una habitación existente.
+# Para las pruebas del PUT, revisar primero cuántas plazas tiene actualmente.
+@habitacionId = 6a58188c9efc07b0541055b6
+
+#--------------- HABITACIONES - CREACIÓN Y VALIDACIONES ---------------------------#
+
+### Crear habitacion
+POST {{host}}/api/v1/habitaciones
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Habitación Gold",
+  "plazasDisponibles": 5
+}
+
+### Validacion: nombre vacío - Debe responder 400
+POST {{host}}/api/v1/habitaciones
+Content-Type: {{contentType}}
+
+{
+  "nombre": "",
+  "plazasDisponibles": 2
+}
+
+### Validacion: nombre compuesto solamente por espacios - Debe responder 400
+POST {{host}}/api/v1/habitaciones
+Content-Type: {{contentType}}
+
+{
+  "nombre": "   ",
+  "plazasDisponibles": 2
+}
+
+### Validacion: plazasDisponibles negativa - Debe responder 400
+POST {{host}}/api/v1/habitaciones
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Habitación inválida",
+  "plazasDisponibles": -1
+}
+
+### Validacion: plazasDisponibles faltante - Debe responder 400
+POST {{host}}/api/v1/habitaciones
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Habitación sin plazas"
+}
+
+### Crear habitacion sin disponibilidad
+# Sirve para comprobar el filtro disponible=true
+POST {{host}}/api/v1/habitaciones
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Habitación ocupada",
+  "plazasDisponibles": 0
+}
+
+#--------------- HABITACIONES - Consultas ---------------------------#
+
+### Listar todas las habitaciones
+GET {{host}}/api/v1/habitaciones
+
+### Listar unicamente habitaciones disponibles
+# Solo debe devolver habitaciones con plazasDisponibles mayor a 0
+GET {{host}}/api/v1/habitaciones?disponible=true
+
+### Obtener habitación por ID
+GET {{host}}/api/v1/habitaciones/{{habitacionId}}
+
+### Obtener habitación inexistente- Debe responder 404.
+GET {{host}}/api/v1/habitaciones/000000000000000000000000
+
+#--------------- JWT LOGIN---------------------------#
+### Login válido
+# @name login
+POST {{host}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "admin",
+  "password": "admin123"
+}
+
+### Capturar token
+@token = {{login.response.body.token}}
+
+### Login inválido
+POST {{host}}/api/v1/auth/login
+Content-Type: {{contentType}}
+
+{
+  "username": "admin",
+  "password": "incorrecta"
+}
+
+#--------------- JWT + UPDATE -------------------#
+
+### Actualizar habitación sin token
+PUT {{host}}/api/v1/habitaciones/{{habitacionId}}
+Content-Type: {{contentType}}
+
+{
+  "nombre": "Habitación Deluxe Renovada",
+  "plazasDisponibles": 3
+}
+
+### Actualizar con JWT
+PUT {{host}}/api/v1/habitaciones/{{habitacionId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "nombre": "Habitación Deluxe Renovada",
+  "plazasDisponibles": 3
+}
+
+### Validación PUT: aumentar más de una plaza
+PUT {{host}}/api/v1/habitaciones/{{habitacionId}}
+Content-Type: {{contentType}}
+Authorization: Bearer {{token}}
+
+{
+  "nombre": "Habitación Gold Renovada",
+  "plazasDisponibles": 8
+}
+
+
+
+#--------------- JWT + DELETE -------------------#
+
+### Eliminar habitación sin token
+DELETE {{host}}/api/v1/habitaciones/{{habitacionId}}
+
+### Eliminar con JWT
+DELETE {{host}}/api/v1/habitaciones/{{habitacionId}}
+Authorization: Bearer {{token}}
+
+#--------------- API EXTERNA -------------------#
+
+### Generar CSV de Pokémon
+GET {{host}}/api/v1/pokemon/csv
