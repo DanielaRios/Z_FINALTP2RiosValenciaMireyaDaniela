@@ -23,7 +23,7 @@ El proyecto implementa autenticación mediante JWT, persistencia con MongoDB Atl
 Clonar el repositorio:
 
 ```bash
-git clone <URL_DEL_REPOSITORIO>
+git clone https://github.com/DanielaRios/Z_FINALTP2RiosValenciaMireyaDaniela
 ```
 
 Ingresar al proyecto:
